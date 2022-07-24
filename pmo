@@ -54,7 +54,9 @@ subcmd="${1:-}"
 
 # === Validate file argument and generate an argument for MIME making command
 case "${subcmd}" in
-    upgrade|update) ;;
+    search|update|upgrade)
+        shift
+        ;;
     *) print_usage_and_exit ;;
 esac
 
@@ -78,5 +80,5 @@ cat <<-EOF |
         case "${pm##*/}" in
             apt) sudo='sudo' ;;
         esac
-        (set -x; $sudo "${pm}" "${subcmd}" </dev/tty)
+        (set -x; $sudo "${pm}" "${subcmd}" "${@}" </dev/tty)
     done
