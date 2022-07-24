@@ -13,7 +13,8 @@ export UNIX_STD=2003
 # === Define the functions for printing usage and exiting ============
 print_usage_and_exit () {
   cat <<-USAGE 1>&2
-	Usage   : ${0##*/}
+	Usage   : ${0##*/} [-pm <package-manager>] <subcommand> <options>
+	Subcommands : install, search, update, upgrade
 	USAGE
   exit 1
 }
@@ -51,12 +52,11 @@ done
 
 # === Read Subcommand ================================================
 subcmd="${1:-}"
+shift
 
 # === Validate file argument and generate an argument for MIME making command
 case "${subcmd}" in
-    search|update|upgrade)
-        shift
-        ;;
+    install|search|update|upgrade) ;;
     *) print_usage_and_exit ;;
 esac
 
@@ -65,8 +65,10 @@ esac
 # Main Routine
 ######################################################################
 
-if [ -n "${pm:-}" ]; then
-    "pmo-${pm}" "${subcmd}" "${@}"
+export PS4='==> '
+
+if [ "${subcmd}" = install ] || [ -n "${pm:-}" ]; then
+    (set -x; "${pm}" "${subcmd}" "${@}")
     return
 fi
 
@@ -75,7 +77,6 @@ cat <<-EOF |
 	brew
 	EOF
     while read pm; do
-        export PS4='==> '
         sudo=''
         case "${pm##*/}" in
             apt) sudo='sudo' ;;
