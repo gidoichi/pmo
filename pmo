@@ -13,7 +13,9 @@ export UNIX_STD=2003
 # === Define the functions for printing usage and exiting ============
 print_usage_and_exit () {
   cat <<-USAGE 1>&2
-	Usage   : ${0##*/} [-pm <package-manager>] <subcommand> <options>
+	Usage   : ${0##*/} [<options>] <subcommand> <pm-options>
+	Optoins : --pm=<package-manager>
+	          --prefix=<command-prefix>
 	Subcommands : install, search, update, upgrade
 	USAGE
   exit 1
@@ -49,8 +51,12 @@ while :; do
         prefix=$(printf '%s' "${1#--prefix=}" | tr -d '\n')
         shift
         ;;
-    --|-)
+    --)
+        shift
         break
+        ;;
+    --help|-h|--version)
+        print_usage_and_exit
         ;;
     --*|-*)
         error_exit 1 'Invalid option'
@@ -79,7 +85,7 @@ esac
 export PS4='==> '
 
 if [ "${subcmd}" = install ] || [ -n "${pm:-}" ]; then
-    (set -x; "${pm}" "${subcmd}" "${@}")
+    print_and_exec "${pm}" "${subcmd}" "${@}"
     return
 fi
 
@@ -94,7 +100,6 @@ pms=$(printf '%s\n' "${PATH}" |
 printf '%s\n' "${pms}" |
     tr ':' '\n' |
     while IFS= read pm; do
-        export PS4='==> '
         sudo=''
         case "${pm##*/}" in
             apt|"${prefix}apt") sudo='sudo' ;;
