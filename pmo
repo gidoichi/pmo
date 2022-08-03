@@ -22,6 +22,10 @@ error_exit() {
   ${2+:} false && echo "${0##*/}: $2" 1>&2
   exit $1
 }
+print_and_exec () {
+  echo "${PS4}${*}" 1>&2
+  "${@}"
+}
 
 # === Detect home directory of this app ==============================
 Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d."; pwd)"
@@ -31,11 +35,18 @@ Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d."; pwd)"
 # Argument Parsing
 ######################################################################
 
+# === Initialize parameters ==========================================
+prefix='pmo-'
+
 # === Read options ===================================================
 while :; do
   case "${1:-}" in
     --pm=*)
         pm=$(printf '%s' "${1#--pm=}" | tr -d '\n')
+        shift
+        ;;
+    --prefix=*)
+        prefix=$(printf '%s' "${1#--prefix=}" | tr -d '\n')
         shift
         ;;
     --|-)
@@ -72,14 +83,24 @@ if [ "${subcmd}" = install ] || [ -n "${pm:-}" ]; then
     return
 fi
 
-cat <<-EOF |
-	apt
-	brew
-	EOF
-    while read pm; do
+pms=$(printf '%s\n' "${PATH}" |
+          tr ':' '\n' |
+          while IFS= read p; do [ -d "${p}" ] && find "${p}" -maxdepth 1; done |
+          grep "/${prefix}[^/]*\$" |
+          rev | sort | rev |
+          awk '{file=$0; gsub(/.*\//,"",file); if(pre!=file)print; pre=file}' |
+          tr '\n' ':' | sed 's/:$//')
+
+printf '%s\n' "${pms}" |
+    tr ':' '\n' |
+    while IFS= read pm; do
+        export PS4='==> '
         sudo=''
         case "${pm##*/}" in
-            apt) sudo='sudo' ;;
+            apt|"${prefix}apt") sudo='sudo' ;;
         esac
-        (set -x; $sudo "${pm}" "${subcmd}" "${@}" </dev/tty)
+        case "${subcmd}" in
+             search) sudo='' ;;
+        esac
+        print_and_exec ${sudo} "${pm}" "${subcmd}" "${@}" </dev/tty
     done
