@@ -2,11 +2,6 @@
 
 set -eu
 
-error_exit() {
-  ${2+:} false && echo "${0##*/}: $2" 1>&2
-  exit $1
-}
-
 print_and_exec() {
   PS4=$( (set -x; :) 2>&1 | sed 's/:$//')
   echo "${PS4}${*}" 1>&2
@@ -24,5 +19,4 @@ subcmd=$1
 
 case "${subcmd}" in
     upgrade) asdf_update ;;
-    *) error_exit "Not supported subcommand: ${subcmd}"
 esac
