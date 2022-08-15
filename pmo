@@ -15,7 +15,6 @@ print_usage_and_exit () {
   cat <<-USAGE 1>&2
 	Usage   : ${0##*/} [<options>] <subcommand> <pm-options>
 	Optoins : --pm=<package-manager>
-	          --prefix=<command-prefix>
 	Subcommands : install, search, update, upgrade
 	USAGE
   exit 1
@@ -25,6 +24,7 @@ error_exit() {
   exit $1
 }
 print_and_exec () {
+  PS4=$( (set -x; :) 2>&1 | sed 's/:$//')
   echo "${PS4}${*}" 1>&2
   "${@}"
 }
@@ -37,18 +37,11 @@ Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d."; pwd)"
 # Argument Parsing
 ######################################################################
 
-# === Initialize parameters ==========================================
-prefix='pmo-'
-
 # === Read options ===================================================
 while :; do
   case "${1:-}" in
     --pm=*)
         pm=$(printf '%s' "${1#--pm=}" | tr -d '\n')
-        shift
-        ;;
-    --prefix=*)
-        prefix=$(printf '%s' "${1#--prefix=}" | tr -d '\n')
         shift
         ;;
     --)
@@ -82,30 +75,15 @@ esac
 # Main Routine
 ######################################################################
 
-export PS4='==> '
-
 if [ "${subcmd}" = install ] || [ -n "${pm:-}" ]; then
-    print_and_exec "${pm}" "${subcmd}" "${@}"
+    print_and_exec "${Homedir}/bin/${pm}" "${subcmd}" "${@}"
     return
 fi
 
-pms=$(printf '%s\n' "${PATH}" |
-          tr ':' '\n' |
-          while IFS= read p; do [ -d "${p}" ] && find "${p}" -maxdepth 1; done |
-          grep "/${prefix}[^/]*\$" |
-          rev | sort | rev |
-          awk '{file=$0; gsub(/.*\//,"",file); if(pre!=file)print; pre=file}' |
-          tr '\n' ':' | sed 's/:$//')
+pms=$(find "${Homedir}/bin" -not -type d -not -path '*/.*')
 
 printf '%s\n' "${pms}" |
     tr ':' '\n' |
     while IFS= read pm; do
-        sudo=''
-        case "${pm##*/}" in
-            apt|"${prefix}apt") sudo='sudo' ;;
-        esac
-        case "${subcmd}" in
-             search) sudo='' ;;
-        esac
-        print_and_exec ${sudo} "${pm}" "${subcmd}" "${@}" </dev/tty
+        print_and_exec "${pm}" "${subcmd}" "${@}" </dev/tty
     done
