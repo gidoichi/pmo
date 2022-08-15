@@ -1,0 +1,18 @@
+# -*- mode: shell-script -*-
+
+set -eu
+
+print_and_exec () {
+  PS4=$( (set -x; :) 2>&1 | sed 's/:$//')
+  echo "${PS4}${*}" 1>&2
+  "${@}"
+}
+
+subcmd=$1
+
+sudo='sudo'
+case "${subcmd}" in
+    search) sudo='' ;;
+esac
+
+print_and_exec $sudo apt "${@}"
