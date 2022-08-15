@@ -1,0 +1,11 @@
+# -*- mode: shell-script -*-
+
+set -eu
+
+print_and_exec () {
+    PS4=$( (set -x; :) 2>&1 | sed 's/:$//')
+    echo "${PS4}${*}" 1>&2
+    "${@}"
+}
+
+print_and_exec brew "${@}"
