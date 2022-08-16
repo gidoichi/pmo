@@ -2,17 +2,18 @@
 
 set -eu
 
-print_and_exec() {
-  PS4=$( (set -x; :) 2>&1 | sed 's/:$//')
-  echo "${PS4}${*}" 1>&2
-  "${@}"
-}
+print_and_exec() (
+    PS4=$( (set -x; :) 2>&1 | sed 's/:$//')
+    echo "${PS4}${*}" 1>&2
+    PS4=$(printf '%s' "${PS4}" | sed 's/\(.\) $/\1\0/')
+    PS4="${PS4}" "${@}"
+)
 
 asdf_update() {
-  print_and_exec asdf plugin update --all
-  asdf current | cut -d ' ' -f 1 | while read line; do
-    print_and_exec asdf global "${line}" latest
-  done
+    print_and_exec asdf plugin update --all
+    asdf current | cut -d ' ' -f 1 | while read line; do
+        print_and_exec asdf global "${line}" latest
+    done
 }
 
 subcmd=$1
