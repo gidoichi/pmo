@@ -23,12 +23,16 @@ print_and_exec() (
 )
 
 git_upgrade() {
+    eval $(print_and_exec ssh-agent)
+    print_and_exec ssh-add
     cat "${LIST_FILE}" |
         while IFS= read repo; do (
+            cd "${LIST_FILE%/*}"
             cd "${repo}" || continue
             print_and_exec : git pull: "$(pwd)"
             git pull origin "$(git rev-parse --abbrev-ref HEAD)" || continue
-        ) done
+        ); done
+    print_and_exec ssh-agent -k
 }
 
 update_list() {
