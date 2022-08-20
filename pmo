@@ -79,8 +79,17 @@ fi
 
 pms=$(find "${Homedir}/bin" -not -type d -not -path '*/.*' | tr '\n' ':' | sed 's/:$//')
 
-printf '%s\n' "${pms}" |
-    tr ':' '\n' |
-    while IFS= read pm; do
-        print_and_exec "${pm}" "${subcmd}" "${@}" </dev/tty
-    done
+code=0
+i=0
+l=$(printf '%s\n' "${pms}" | tr ':' '\n' | wc -l)
+while [ "${i}" -lt "${l}" ]; do
+    pm=$(printf '%s\n' "${pms}" | tr ':' '\n' | sed -n "$((i+1))p")
+    print_and_exec "${pm}" "${subcmd}" "${@}" </dev/tty
+    c="${?}"
+    if [ "${c}" -ne 0 ]; then
+        code="${c}"
+    fi
+    i=$((i+1))
+done
+
+return "${code}"
