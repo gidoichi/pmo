@@ -29,7 +29,7 @@ print_and_exec() (
     PS4=$( (set -x; :) 2>&1 | sed 's/:$//')
     echo "${PS4}${*}" 1>&2
     PS4=$(printf '%s' "${PS4}" | sed 's/\(.\) $/\1\0/')
-    PS4="${PS4}" "${@}"
+    PS4="${PS4}" "$@"
 )
 
 # === Detect home directory of this app ==============================
@@ -73,7 +73,7 @@ shift
 ######################################################################
 
 if [ "${subcmd}" = install ] || [ -n "${pm:-}" ]; then
-    print_and_exec "${Homedir}/bin/${pm}" "${subcmd}" "${@}"
+    print_and_exec "${Homedir}/bin/${pm}" "${subcmd}" "$@"
     return
 fi
 
@@ -84,7 +84,7 @@ i=0
 l=$(printf '%s\n' "${pms}" | tr ':' '\n' | wc -l)
 while [ "${i}" -lt "${l}" ]; do
     pm=$(printf '%s\n' "${pms}" | tr ':' '\n' | sed -n "$((i+1))p")
-    print_and_exec "${pm}" "${subcmd}" "${@}" </dev/tty
+    print_and_exec "${pm}" "${subcmd}" "$@" </dev/tty
     c="${?}"
     if [ "${c}" -ne 0 ]; then
         code="${c}"

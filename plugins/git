@@ -19,7 +19,7 @@ print_and_exec() (
     PS4=$( (set -x; :) 2>&1 | sed 's/:$//')
     echo "${PS4}${*}" 1>&2
     PS4=$(printf '%s' "${PS4}" | sed 's/\(.\) $/\1\0/')
-    PS4="${PS4}" "${@}"
+    PS4="${PS4}" "$@"
 )
 
 git_upgrade() {
@@ -52,7 +52,7 @@ LIST_FILE="${Homedir}/plugins/git.d/list"
 subcmd="${1}"
 
 case "${subcmd}" in
-    upgrade) git_upgrade "${@}" ;;
+    upgrade) git_upgrade "$@" ;;
     pm-list) update_list ;;
     pm-get-list) get_list ;;
 esac
