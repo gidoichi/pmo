@@ -23,8 +23,13 @@ print_and_exec() (
 )
 
 git_upgrade() {
-    eval $(print_and_exec ssh-agent)
-    print_and_exec ssh-add
+    upagent=0
+    if [ -z ${SSH_AUTH_SOCK+_} ] && [ -z ${SSH_AGENT_PID+_} ]; then
+        upagent=1
+        eval $(print_and_exec ssh-agent)
+        print_and_exec ssh-add
+    fi
+
     cat "${LIST_FILE}" |
         while IFS= read repo; do (
             cd "${LIST_FILE%/*}"
@@ -32,7 +37,11 @@ git_upgrade() {
             print_and_exec : git pull: "$(pwd)"
             git pull origin "$(git rev-parse --abbrev-ref HEAD)" || continue
         ); done
-    print_and_exec ssh-agent -k
+
+    if [ "${upagent}" -ne 0 ]; then
+        upagent=0
+        print_and_exec ssh-agent -k
+    fi
 }
 
 update_list() {
