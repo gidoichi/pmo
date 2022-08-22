@@ -74,7 +74,7 @@ shift
 
 if [ "${subcmd}" = install ] || [ -n "${pm:-}" ]; then
     print_and_exec "${Homedir}/bin/${pm}" "${subcmd}" "$@"
-    return
+    exit
 fi
 
 pms=$(find "${Homedir}/bin" -not -type d -not -path '*/.*' | tr '\n' ':' | sed 's/:$//')
@@ -92,4 +92,4 @@ while [ "${i}" -lt "${l}" ]; do
     i=$((i+1))
 done
 
-return "${code}"
+exit "${code}"
