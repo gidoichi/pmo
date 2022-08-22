@@ -5,7 +5,7 @@
 ######################################################################
 
 # === Initialize shell environment ===================================
-set -u
+set -eu
 umask 0022
 export LC_ALL=C
 export UNIX_STD=2003
@@ -84,10 +84,8 @@ i=0
 l=$(printf '%s\n' "${pms}" | tr ':' '\n' | wc -l)
 while [ "${i}" -lt "${l}" ]; do
     pm=$(printf '%s\n' "${pms}" | tr ':' '\n' | sed -n "$((i+1))p")
-    print_and_exec "${pm}" "${subcmd}" "$@" </dev/tty
-    c="${?}"
-    if [ "${c}" -ne 0 ]; then
-        code="${c}"
+    if ! print_and_exec "${pm}" "${subcmd}" "$@" </dev/tty; then
+        code=1
     fi
     i=$((i+1))
 done
