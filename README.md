@@ -18,7 +18,7 @@ To register git repositoy `repo` to manage by pmo:
 ```
 $ cd pmo/bin
 $ ln -s ../plugins/git .
-$ echo '/path/to/repo' | cat - <(pmo --pm=git pm-get-list) | pmo --pm=git pm-list
+$ echo '/path/to/repo' | cat - <(pmo --pm=git list) | pmo --pm=git pm-list-add
 ```
 
 To update all the package managers and upgrade all packages:

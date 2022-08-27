@@ -50,7 +50,7 @@ update_list() {
     mv "${Tmp}" "${LIST_FILE}"
 }
 
-get_list() {
+list() {
     cat "${LIST_FILE}"
 }
 
@@ -61,6 +61,6 @@ subcmd="${1}"
 
 case "${subcmd}" in
     upgrade) git_upgrade "$@" ;;
-    pm-list) update_list ;;
-    pm-get-list) get_list ;;
+    pm-list-add) update_list ;;
+    list) list ;;
 esac
