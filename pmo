@@ -26,9 +26,8 @@ error_exit() {
 }
 
 print_and_exec() (
-    echo "${PS4}${*}" 1>&2
-    PS4=$(printf '%s' "${PS4}" | sed 's/\(.\) $/\1\1 /')
-    PS4="${PS4}" "$@"
+    (set -x; : "${@}")
+    "$@"
 )
 
 # === Detect home directory of this app ==============================
@@ -80,7 +79,7 @@ pms=$(find "${Homedir}/bin" -not -type d -not -path '*/.*' | tr '\n' ':' | sed '
 
 code=0
 i=0
-l=$(printf '%s\n' "${pms}" | tr ':' '\n' | wc -l)
+l=$(printf '%s' "${pms}" | tr ':' '\n' | wc -l)
 while [ "${i}" -lt "${l}" ]; do
     pm=$(printf '%s\n' "${pms}" | tr ':' '\n' | sed -n "$((i+1))p")
     if ! print_and_exec "${pm}" "${subcmd}" "$@" </dev/tty; then
