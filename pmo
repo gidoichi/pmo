@@ -25,11 +25,6 @@ error_exit() {
     exit $1
 }
 
-print_and_exec() (
-    (set -x; : "${@}")
-    "$@"
-)
-
 # === Detect home directory of this app ==============================
 Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d."; pwd)"
 
@@ -71,7 +66,7 @@ shift
 ######################################################################
 
 if [ "${subcmd}" = install ] || [ -n "${pm:-}" ]; then
-    print_and_exec "${Homedir}/bin/${pm}" "${subcmd}" "$@"
+    "${Homedir}/bin/${pm}" "${subcmd}" "$@"
     exit
 fi
 
@@ -80,9 +75,9 @@ pms=$(find "${Homedir}/bin" -not -type d -not -path '*/.*' | tr '\n' ':' | sed '
 code=0
 i=0
 l=$(printf '%s' "${pms}" | tr ':' '\n' | wc -l)
-while [ "${i}" -lt "${l}" ]; do
+while [ "${i}" -le "${l}" ]; do
     pm=$(printf '%s\n' "${pms}" | tr ':' '\n' | sed -n "$((i+1))p")
-    if ! print_and_exec "${pm}" "${subcmd}" "$@" </dev/tty; then
+    if ! "${pm}" "${subcmd}" "$@" </dev/tty; then
         code=1
     fi
     i=$((i+1))
