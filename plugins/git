@@ -21,6 +21,10 @@ print_and_exec() (
 )
 
 git_upgrade() {
+    if [ ! -f "${LIST_FILE}" ] || [ "$(du -b "${LIST_FILE}" | sed 's/^\([0-9]*\).*/\1/')" -eq 0 ]; then
+        return
+    fi
+
     upagent=0
     if [ -z ${SSH_AUTH_SOCK+_} ] && [ -z ${SSH_AGENT_PID+_} ]; then
         upagent=1
