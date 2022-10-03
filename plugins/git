@@ -64,6 +64,6 @@ subcmd="${1}"
 
 case "${subcmd}" in
     upgrade) git_upgrade "$@" ;;
-    pm-list-add) update_list ;;
+    pm-list-save) update_list ;;
     list) list ;;
 esac
