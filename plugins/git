@@ -21,7 +21,7 @@ print_and_exec() (
 )
 
 git_upgrade() {
-    if [ ! -f "${LIST_FILE}" ] || [ "$(du -b "${LIST_FILE}" | sed 's/^\([0-9]*\).*/\1/')" -eq 0 ]; then
+    if [ ! -f "${LIST_FILE}" ] || [ "$(du -k "${LIST_FILE}" | awk '{print $1}')" -eq 0 ]; then
         return
     fi
 
