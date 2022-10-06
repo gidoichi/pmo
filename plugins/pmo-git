@@ -68,7 +68,7 @@ list() {
 }
 
 Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d.."; pwd)"
-LIST_FILE="${Homedir}/plugins/git.d/list"
+LIST_FILE="${Homedir}/plugins/pmo-git.d/list"
 
 subcmd="${1}"
 
