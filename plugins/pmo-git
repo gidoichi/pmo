@@ -32,28 +32,17 @@ git_upgrade() {
         print_and_exec ssh-add
     fi
 
-    repos="$(cat "${LIST_FILE}")"
-    code=0
-    i=0
-    l=$(printf '%s' "${repos}" | tr ':' '\n' | wc -l)
-    while [ "${i}" -le "${l}" ]; do
-        repo=$(printf '%s\n' "${repos}" | tr ':' '\n' | sed -n "$((i+1))p")
-        if ! (
-                cd "${LIST_FILE%/*}"
-                cd "${repo}" || return 1
-                print_and_exec git pull "$(git remote get-url origin)" "$(git rev-parse --abbrev-ref HEAD)"
-            ) </dev/tty; then
-            code=1
-        fi
-        i=$((i+1))
-    done
+    cat "${LIST_FILE}" |
+        while IFS= read repo; do (
+            cd "${LIST_FILE%/*}"
+            cd "${repo}" || exit 1
+            print_and_exec git pull "$(git remote get-url origin)" "$(git rev-parse --abbrev-ref HEAD)"
+        ); done
 
     if [ "${upagent}" -ne 0 ]; then
         upagent=0
         print_and_exec ssh-agent -k
     fi
-
-    return "${code}"
 }
 
 update_list() {
