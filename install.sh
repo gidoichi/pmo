@@ -14,18 +14,15 @@ esac
 targets=$(
     find "${PARENT}/${plugins_dir}" -maxdepth 1 -type f -name 'pmo-*' |
         sed 's#^.*/##' |
-        case "${subcmd}" in
-            all)
-                cat
-                ;;
-            auto-install)
-                while IFS= read -r file; do
-                    if type "${file#pmo-}" >/dev/null; then
-                        printf '%s\n' "${file}"
-                    fi
-                done
-                ;;
-        esac |
+        if   [ "${subcmd}" = 'all' ]; then
+            cat
+        elif [ "${subcmd}" = 'auto-install' ]; then
+            while IFS= read -r file; do
+                if type "${file#pmo-}" >/dev/null; then
+                    printf '%s\n' "${file}"
+                fi
+            done
+        fi |
         tr '\n' ':' | sed 's/:$//'
        )
 
