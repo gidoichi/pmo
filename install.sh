@@ -30,14 +30,14 @@ printf '%s\n' "${targets}" |
     tr ':' '\n' |
     while IFS= read -r file; do
         cd "${PARENT}/${bin_dir}"
-        if [ -L "${bin_dir}/${file}" ]; then
-            inode_org="$(ls -di "${plugins_dir}/${file}" | cut -d ' ' -f 1)"
-            inode_lnk="$(ls -di "$(readlink "../${bin_dir}/${file}")" 2>/dev/null | cut -d ' ' -f 1)"
+        if [ -L "${file}" ]; then
+            inode_org="$(ls -di "../${plugins_dir}/${file}" | cut -d ' ' -f 1)"
+            inode_lnk="$(ls -di "$(readlink "${file}")" 2>/dev/null | cut -d ' ' -f 1)"
             if [ "${inode_org}" -eq "${inode_lnk}" ] 2>/dev/null; then
                 continue
             fi
         fi
-        if ! (set -x; ln -s "../${plugins_dir}/${file}" "../${bin_dir}/"); then
+        if ! (set -x; ln -s "../${plugins_dir}/${file}" .); then
             exit 1
         fi
     done
