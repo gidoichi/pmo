@@ -7,15 +7,25 @@ print_and_exec() (
     "$@"
 )
 
+asdf_list() {
+    print_and_exec asdf list
+}
+
 asdf_update() {
     print_and_exec asdf plugin update --all
+}
+
+asdf_upgrade() {
     asdf current | cut -d ' ' -f 1 | while read line; do
+        print_and_exec asdf install "${line}" latest
         print_and_exec asdf global "${line}" latest
     done
 }
 
-subcmd=$1
+subcmd="${1}"
 
 case "${subcmd}" in
-    upgrade) asdf_update ;;
+    list) asdf_list ;;
+    update) asdf_update ;;
+    upgrade) asdf_upgrade ;;
 esac

@@ -7,7 +7,7 @@ print_and_exec() (
     "$@"
 )
 
-subcmd=$1
+subcmd="${1}"
 
 sudo='sudo'
 case "${subcmd}" in
