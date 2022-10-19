@@ -5,13 +5,17 @@ pmo manager many package manager such as apt, brew, and others. You are not need
 
 ## USAGE
 
-To register CLI package manager `pm`:
+### Registering package managers 
+
+To register CLI package manager `<pm>`:
 
 ```
 $ git clone https://github.com/gidoichi/pmo.git
 $ cd pmo/bin
 $ ln -s ../plugins/<pm> .
 ```
+
+### pmo subcommands
 
 To register git repositoy `repo` to manage by pmo:
 

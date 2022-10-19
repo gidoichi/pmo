@@ -13,9 +13,19 @@ export UNIX_STD=2003
 # === Define the functions for printing usage and exiting ============
 print_usage_and_exit() {
     cat <<-USAGE 1>&2
-	Usage   : ${0##*/} [<options>] <subcommand> <pm-options>
-	Optoins : --pm=<package-manager>
-	Subcommands : install, search, update, upgrade
+	Usage: ${0##*/} [<options>] <subcommand> <pm-options>
+	Options:
+	  --pm=<package-manager> ... specify package manager to execute with subcommand.
+	
+	Subcommands:
+	  install <package> ... install package. This subcommand needs to --pm option.
+	  list [option] ....... (not implemented) list installable packages.
+	    List options:
+	    --installed ....... (not implemented) list installed packages.
+	    --upgradable ...... (not implemented) list installed and upgradable packages.
+	  search <package> .... (not implemented) search package.
+	  update .............. update local cache.
+	  upgrade ............. upgrade installed package to the latest.
 	USAGE
     exit 1
 }
