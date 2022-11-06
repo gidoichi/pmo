@@ -7,4 +7,11 @@ print_and_exec() (
     "$@"
 )
 
-print_and_exec brew "$@"
+subcmd="${1}"
+
+case "${subcmd}" in
+    list)   print_and_exec brew list ;;
+    search) print_and_exec brew search "$@" ;;
+    update) print_and_exec brew update ;;
+    upgrade)    print_and_exec brew upgrade ;;
+esac

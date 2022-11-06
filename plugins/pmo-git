@@ -20,7 +20,7 @@ print_and_exec() (
     "$@"
 )
 
-git_upgrade() {
+upgrade() {
     if [ ! -f "${LIST_FILE}" ] || [ "$(du -k "${LIST_FILE}" | awk '{print $1}')" -eq 0 ]; then
         return
     fi
@@ -58,7 +58,7 @@ LIST_FILE="${Homedir}/plugins/pmo-git.d/list"
 subcmd="${1}"
 
 case "${subcmd}" in
-    upgrade) git_upgrade "$@" ;;
+    upgrade) upgrade "$@" ;;
     pm-list-save) update_list ;;
     list) print_and_exec cat "${LIST_FILE}" || true ;;
 esac
