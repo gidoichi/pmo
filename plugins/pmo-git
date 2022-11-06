@@ -52,10 +52,6 @@ update_list() {
     mv "${Tmp}" "${LIST_FILE}"
 }
 
-list() {
-    cat "${LIST_FILE}"
-}
-
 Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d.."; pwd)"
 LIST_FILE="${Homedir}/plugins/pmo-git.d/list"
 
@@ -64,5 +60,5 @@ subcmd="${1}"
 case "${subcmd}" in
     upgrade) git_upgrade "$@" ;;
     pm-list-save) update_list ;;
-    list) list ;;
+    list) print_and_exec cat "${LIST_FILE}" || true ;;
 esac

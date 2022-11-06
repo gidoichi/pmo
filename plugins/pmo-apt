@@ -9,9 +9,9 @@ print_and_exec() (
 
 subcmd="${1}"
 
-sudo='sudo'
 case "${subcmd}" in
-    search) sudo='' ;;
+    list)   print_and_exec apt list --installed ;;
+    search) print_and_exec sudo apt search "$@" ;;
+    update) print_and_exec sudo apt update ;;
+    upgrade)    print_and_exec sudo apt upgrade ;;
 esac
-
-print_and_exec $sudo apt "$@"

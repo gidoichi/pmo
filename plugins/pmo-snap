@@ -1,0 +1,17 @@
+# -*- mode: shell-script -*-
+
+set -eu
+
+print_and_exec() (
+    (set -x; : "${@}")
+    "$@"
+)
+
+subcmd="${1}"
+
+case "${subcmd}" in
+    list)   print_and_exec snap list ;;
+    search) print_and_exec snap find "$@" ;;
+    update) print_and_exec snap refresh --list ;;
+    upgrade)    print_and_exec sudo snap refresh ;;
+esac
