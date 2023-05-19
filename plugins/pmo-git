@@ -15,10 +15,17 @@ exit_trap() {
     exit $1
 }
 
-print_and_exec() (
-    (set -x; : "${@}")
+debug() (
+    (PS4=':'; set -x; : "${@}")
     "$@"
 )
+
+update_list() {
+    trap 'exit_trap' EXIT HUP INT QUIT PIPE ALRM TERM
+    Tmp=$(mktemp -t "_${0##*/}.$$.XXXXXXXXXXX") || error_exit 1 'Failed to mktemp'
+    cat | sort | uniq > "${Tmp}"
+    mv "${Tmp}" "${LIST_FILE}"
+}
 
 upgrade() {
     if [ ! -f "${LIST_FILE}" ] || [ "$(du -k "${LIST_FILE}" | awk '{print $1}')" -eq 0 ]; then
@@ -28,28 +35,32 @@ upgrade() {
     upagent=0
     if [ -z ${SSH_AUTH_SOCK+_} ] && [ -z ${SSH_AGENT_PID+_} ]; then
         upagent=1
-        eval $(print_and_exec ssh-agent)
-        print_and_exec ssh-add
+        eval $(debug ssh-agent)
+        debug ssh-add
     fi
 
     cat "${LIST_FILE}" |
         while IFS= read repo; do (
             cd "${LIST_FILE%/*}"
             cd "${repo}" || exit 1
-            print_and_exec git pull "$(git remote get-url origin)" "$(git rev-parse --abbrev-ref HEAD)"
+            debug git pull "$(git remote get-url origin)" "$(git rev-parse --abbrev-ref HEAD)"
         ); done
 
     if [ "${upagent}" -ne 0 ]; then
         upagent=0
-        print_and_exec ssh-agent -k
+        debug ssh-agent -k
     fi
 }
 
-update_list() {
-    trap 'exit_trap' EXIT HUP INT QUIT PIPE ALRM TERM
-    Tmp=$(mktemp -t "_${0##*/}.$$.XXXXXXXXXXX") || error_exit 1 'Failed to mktemp'
-    cat | sort | uniq > "${Tmp}"
-    mv "${Tmp}" "${LIST_FILE}"
+help() {
+    debug : ${0##*/} help
+    cat <<-USAGE 1>&2
+	usage: ${0##*/} <subcommand>
+	sub commands:
+	  list
+	  pm-list-save
+	  upgrade
+	USAGE
 }
 
 Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d.."; pwd)"
@@ -58,7 +69,8 @@ LIST_FILE="${Homedir}/plugins/pmo-git.d/list"
 subcmd="${1}"
 
 case "${subcmd}" in
-    upgrade) upgrade "$@" ;;
+    list) debug cat "${LIST_FILE}" || true ;;
     pm-list-save) update_list ;;
-    list) print_and_exec cat "${LIST_FILE}" || true ;;
+    upgrade) upgrade "$@" ;;
+    help) help ;;
 esac

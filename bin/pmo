@@ -15,8 +15,8 @@ print_usage_and_exit() {
     cat <<-USAGE 1>&2
 	Usage: ${0##*/} [<options>] <subcommand> <pm-options>
 	Options:
-	  --pm=<package-manager> ... specify package manager to execute with subcommand.
-	
+	  -m | --manager=<package-manager> ... specify package manager to execute subcommand.
+
 	Subcommands:
 	  install <package> ... install package. This subcommand needs to --pm option.
 	  list [option] ....... (not implemented) list installable packages.
@@ -46,8 +46,12 @@ Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d."; pwd)"
 # === Read options ===================================================
 while :; do
     case "${1:-}" in
-        --pm=*)
-            pm=$(printf '%s' "${1#--pm=}" | tr -d '\n')
+        -m)
+            pm="${2}"
+            shift 2
+            ;;
+        --manager=*)
+            pm="${1#--pm=}"
             shift
             ;;
         --)

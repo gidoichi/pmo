@@ -2,16 +2,29 @@
 
 set -eu
 
-print_and_exec() (
-    (set -x; : "${@}")
+debug() (
+    (PS4=':'; set -x; : "${@}")
     "$@"
 )
+
+help() {
+    debug : ${0##*/} help
+    cat <<-USAGE 1>&2
+	usage: ${0##*/} <subcommand>
+	sub commands:
+	  list
+	  search
+	  update
+	  upgrade
+	USAGE
+}
 
 subcmd="${1}"
 
 case "${subcmd}" in
-    list)   print_and_exec apt list --installed ;;
-    search) print_and_exec sudo apt search "$@" ;;
-    update) print_and_exec sudo apt update ;;
-    upgrade)    print_and_exec sudo apt upgrade ;;
+    list)    debug apt list --installed ;;
+    search)  debug sudo apt search "$@" ;;
+    update)  debug sudo apt update ;;
+    upgrade) debug sudo apt upgrade ;;
+    help)    help ;;
 esac
