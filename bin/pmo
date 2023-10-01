@@ -18,7 +18,7 @@ print_usage_and_exit() {
 	  -m | --manager=<package-manager> ... specify package manager to execute subcommand.
 
 	Subcommands:
-	  install <package> ... install package. This subcommand needs to --pm option.
+	  install <package> ... install package. This subcommand needs to --manager option.
 	  list [option] ....... (not implemented) list installable packages.
 	    List options:
 	    --installed ....... (not implemented) list installed packages.
@@ -51,7 +51,7 @@ while :; do
             shift 2
             ;;
         --manager=*)
-            pm="${1#--pm=}"
+            pm="${1#--manager=}"
             shift
             ;;
         --)
