@@ -21,10 +21,11 @@ help() {
 
 subcmd="${1}"
 
+shift
 case "${subcmd}" in
     list)    debug apt list --installed ;;
     search)  debug sudo apt search "$@" ;;
     update)  debug sudo apt update ;;
-    upgrade) debug sudo apt upgrade ;;
+    upgrade) debug sudo apt upgrade "$@" ;;
     help)    help ;;
 esac
