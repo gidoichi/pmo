@@ -1,3 +1,4 @@
+#!/bin/sh
 # -*- mode: shell-script -*-
 
 set -eu
@@ -7,29 +8,24 @@ debug() (
     "$@"
 )
 
-help() {
-    debug : ${0##*/} help
-    cat <<-USAGE 1>&2
-	usage: ${0##*/} <subcommand>
-	sub commands:
-	  list
-	  list-installed
-	  list-upgradable
-	  search
-	  update
-	  upgrade
-	USAGE
-}
-
-subcmd="${1}"
-
-shift
+#@ SUBCMD_CASE
 case "${subcmd}" in
-    list)            debug apt list ;;
-    list-installed)  debug apt list --installed ;;
-    list-upgradable) debug apt list --upgradable ;;
-    search)          debug apt search "$@" ;;
-    update)          debug sudo apt update ;;
-    upgrade)         debug sudo apt upgrade "$@" ;;
-    help)            help ;;
+    list)            # `apt list`
+        debug apt list
+        ;;
+    list-installed)  # `apt list --installed`
+        debug apt list --installed
+        ;;
+    list-upgradable) # `apt list --upgradable`
+        debug apt list --upgradable
+        ;;
+    search)          # `sudo apt search [args...]`
+        debug sudo apt search "$@"
+        ;;
+    update)          # `sudo apt update`
+        debug sudo apt update
+        ;;
+    upgrade)         # `sudo apt upgrade [args...]`
+        debug sudo apt upgrade "$@"
+        ;;
 esac

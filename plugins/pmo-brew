@@ -1,31 +1,27 @@
+#!/bin/sh
 # -*- mode: shell-script -*-
 
 set -eu
 
-debug() (
-    (PS4=':'; set -x; : "${@}")
-    "$@"
-)
+Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d."; pwd)"
+for file in $(find "${Homedir}/../lib" -not -type d); do
+    . "$file"
+done
 
-help() {
-    debug : ${0##*/} help
-    cat <<-USAGE 1>&2
-	usage: ${0##*/} <subcommand>
-	sub commands:
-	  list-installed
-	  search
-	  update
-	  upgrade
-	USAGE
-}
+subcmd="${1}" && shift
 
-subcmd="${1}"
-
-shift
-case "${subcmd}" in
-    list-installed) debug brew list ;;
-    search)         debug brew search "$@" ;;
-    update)         debug brew update ;;
-    upgrade)        debug brew upgrade "$@" ;;
-    help)           help ;;
+#@ SUBCMD_CASE
+case "$subcmd" in
+    list-installed) # `brew list`
+        debug brew list
+        ;;
+    search)         # `brew search [args...]`
+        debug brew search "$@"
+        ;;
+    update)         # `brew update`
+        debug brew update
+        ;;
+    upgrade)        # `brew upgrade [args...]`
+        debug brew upgrade "$@"
+        ;;
 esac
