@@ -1,0 +1,40 @@
+# -*- mode: shell-script -*-
+
+set -eu
+
+debug() (
+    (PS4=':'; set -x; : "${@}")
+    "$@"
+)
+
+upgrade() {
+    if [ $# -eq 0 ]; then
+        pmo --manager=go list |
+            xargs go version -m |
+            awk '$1=="path"{print $2 "@latest"}' |
+            while read -r pkg; do
+                debug go install "$pkg"
+            done
+    else
+        debug go install "$@"
+    fi
+}
+
+help() {
+    debug : ${0##*/} help
+    cat <<-USAGE 1>&2
+	usage: ${0##*/} <subcommand>
+	sub commands:
+	  list
+	  upgrade
+	USAGE
+}
+
+subcmd="${1}"
+
+shift
+case "${subcmd}" in
+    list-installed) find "$GOPATH/bin" -type f ;;
+    upgrade)        upgrade "$@";;
+    help)           help ;;
+esac
