@@ -1,0 +1,31 @@
+# -*- mode: shell-script -*-
+
+set -eu
+
+debug() (
+    (PS4=':'; set -x; : "${@}")
+    "$@"
+)
+
+help() {
+    debug : ${0##*/} help
+    cat <<-USAGE 1>&2
+	usage: ${0##*/} <subcommand>
+	sub commands:
+	  list-installed
+	  search
+	  update
+	  upgrade
+	USAGE
+}
+
+subcmd="${1}"
+
+shift
+case "${subcmd}" in
+    list-installed) debug kubectl krew list ;;
+    search)         debug kubectl krew search "$@" ;;
+    update)         debug kubectl krew update ;;
+    upgrade)        debug kubectl krew upgrade "$@" ;;
+    help)           help ;;
+esac
