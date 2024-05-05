@@ -19,12 +19,11 @@ print_usage_and_exit() {
 
 	Subcommands:
 	  install <package> ... install package. This subcommand needs to --manager option.
-	  list [option] ....... (not implemented) list installable packages.
-	    List options:
-	    --installed ....... (not implemented) list installed packages.
-	    --upgradable ...... (not implemented) list installed and upgradable packages.
-	  search <package> .... (not implemented) search package.
-	  update .............. update local cache.
+	  list ................ list installable packages.
+	  list-installed ...... list installed packages.
+	  list-upgradable ..... list upgradable packages.
+	  search <package> .... search in installable packages.
+	  update .............. update package list cache.
 	  upgrade ............. upgrade installed package to the latest.
 	USAGE
     exit 1

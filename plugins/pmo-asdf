@@ -19,7 +19,7 @@ help() {
     cat <<-USAGE 1>&2
 	usage: ${0##*/} <subcommand>
 	sub commands:
-	  list
+	  list-installed
 	  update
 	  upgrade
 	USAGE
@@ -28,8 +28,8 @@ help() {
 subcmd="${1}"
 
 case "${subcmd}" in
-    list)    debug asdf list ;;
-    update)  debug asdf plugin update --all ;;
-    upgrade) upgrade ;;
-    help)    help ;;
+    list-installed) debug asdf list ;;
+    update)         debug asdf plugin update --all ;;
+    upgrade)        upgrade ;;
+    help)           help ;;
 esac

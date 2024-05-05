@@ -13,6 +13,8 @@ help() {
 	usage: ${0##*/} <subcommand>
 	sub commands:
 	  list
+	  list-installed
+	  list-upgradable
 	  search
 	  update
 	  upgrade
@@ -23,9 +25,11 @@ subcmd="${1}"
 
 shift
 case "${subcmd}" in
-    list)    debug apt list --installed ;;
-    search)  debug sudo apt search "$@" ;;
-    update)  debug sudo apt update ;;
-    upgrade) debug sudo apt upgrade "$@" ;;
-    help)    help ;;
+    list)            debug apt list ;;
+    list-installed)  debug apt list --installed ;;
+    list-upgradable) debug apt list --upgradable ;;
+    search)          debug apt search "$@" ;;
+    update)          debug sudo apt update ;;
+    upgrade)         debug sudo apt upgrade "$@" ;;
+    help)            help ;;
 esac

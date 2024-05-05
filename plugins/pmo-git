@@ -57,7 +57,7 @@ help() {
     cat <<-USAGE 1>&2
 	usage: ${0##*/} <subcommand>
 	sub commands:
-	  list
+	  list-installed
 	  pm-list-save
 	  upgrade
 	USAGE
@@ -69,8 +69,8 @@ LIST_FILE="${Homedir}/plugins/pmo-git.d/list"
 subcmd="${1}"
 
 case "${subcmd}" in
-    list) debug cat "${LIST_FILE}" || true ;;
-    pm-list-save) update_list ;;
-    upgrade) upgrade "$@" ;;
-    help) help ;;
+    list-installed) debug cat "${LIST_FILE}" || true ;;
+    pm-list-save)   update_list ;;
+    upgrade)        upgrade "$@" ;;
+    help)           help ;;
 esac
