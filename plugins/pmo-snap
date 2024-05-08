@@ -1,17 +1,26 @@
-# -*- mode: shell-script -*-
+#!/bin/sh
 
 set -eu
 
-print_and_exec() (
-    (set -x; : "${@}")
-    "$@"
-)
+Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d."; pwd)"
+for file in $(find "${Homedir}/../lib" -not -type d); do
+    . "$file"
+done
 
-subcmd="${1}"
+subcmd="$1" && shift
 
-case "${subcmd}" in
-    list-installed) print_and_exec snap list ;;
-    search)         print_and_exec snap find "$@" ;;
-    update)         print_and_exec snap refresh --list ;;
-    upgrade)        print_and_exec sudo snap refresh ;;
+#@ SUBCMD_CASE
+case "$subcmd" in
+    list-installed) # `snap list`
+        debug snap list
+        ;;
+    search)         # `snap find [args...]`
+        debug snap find "$@"
+        ;;
+    update)         # `snap refresh --list`
+        debug snap refresh --list
+        ;;
+    upgrade)        # `sudo snap refresh`
+        debug sudo snap refresh
+        ;;
 esac

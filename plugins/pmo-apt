@@ -1,15 +1,19 @@
 #!/bin/sh
-# -*- mode: shell-script -*-
 
 set -eu
 
-debug() (
-    (PS4=':'; set -x; : "${@}")
-    "$@"
-)
+Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d."; pwd)"
+for file in $(find "${Homedir}/../lib" -not -type d); do
+    . "$file"
+done
+
+subcmd="$1" && shift
 
 #@ SUBCMD_CASE
-case "${subcmd}" in
+case "$subcmd" in
+    install)         # `sudo apt install [args...]`
+        sudo apt install "$@"
+        ;;
     list)            # `apt list`
         debug apt list
         ;;
@@ -19,13 +23,16 @@ case "${subcmd}" in
     list-upgradable) # `apt list --upgradable`
         debug apt list --upgradable
         ;;
-    search)          # `sudo apt search [args...]`
-        debug sudo apt search "$@"
+    search)          # `apt search [args...]`
+        debug apt search "$@"
         ;;
     update)          # `sudo apt update`
         debug sudo apt update
         ;;
-    upgrade)         # `sudo apt upgrade [args...]`
-        debug sudo apt upgrade "$@"
+    upgrade)         # `sudo apt upgrade -y [args...]`
+        debug sudo apt upgrade -y "$@"
+        ;;
+    autoremove)      # `sudo apt autoremove`
+        debug sudo apt autoremove
         ;;
 esac

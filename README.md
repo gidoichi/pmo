@@ -5,7 +5,7 @@ pmo manager many package manager such as apt, brew, and others. You are not need
 
 ## USAGE
 
-### Registering package managers 
+### Registering package managers
 
 To register CLI package manager `<pm>`:
 
@@ -17,16 +17,14 @@ $ ln -s ../plugins/<pm> .
 
 ### pmo subcommands
 
-To register git repositoy `repo` to manage by pmo:
-
-```
-$ cd pmo/bin
-$ ln -s ../plugins/git .
-$ echo '/path/to/repo' | cat - <(pmo --pm=git list) | pmo --pm=git pm-list-save
-```
-
 To update all the package managers and upgrade all packages:
 
 ```
 $ pmo update && pmo upgrade
+```
+
+or it's equevalent:
+
+```
+$ pmo update,upgrade
 ```

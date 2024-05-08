@@ -8,7 +8,7 @@ for file in $(find "${Homedir}/../lib" -not -type d); do
     . "$file"
 done
 
-subcmd="${1}" && shift
+subcmd="$1" && shift
 
 #@ SUBCMD_CASE
 case "$subcmd" in

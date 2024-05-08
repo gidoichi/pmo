@@ -70,18 +70,18 @@ while :; do
 done
 
 # === Read Subcommand ================================================
-subcmd="${1:-}"
-shift
+subcmd="${1:-}" && shift
 
 
 ######################################################################
 # Main Routine
 ######################################################################
-
-debug() (
-    (PS4=':'; set -x; : "${@}")
-    "$@"
-)
+if [ "$(printf '%s\n' "$subcmd" | tr ',' '\n' | wc -l)" -ge 2 ]; then
+    printf '%s\n' "$subcmd" | tr ',' '\n' | while read -r cmd; do
+        "$0" "$cmd" "$@"
+    done
+    exit
+fi
 
 if [ "$subcmd" = help ]; then
     if [ -n "${pm:-}" ]; then

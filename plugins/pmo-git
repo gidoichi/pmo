@@ -1,31 +1,6 @@
-# -*- mode: shell-script -*-
+#!/bin/sh
 
 set -eu
-
-error_exit() {
-    ${2+:} false && echo "${0##*/}: $2" 1>&2
-    exit $1
-}
-
-exit_trap() {
-    set -- ${1:-} $?  # $? is set as $1 if no argument given
-    trap '' EXIT HUP INT QUIT PIPE ALRM TERM
-    [ -d "${Tmp:-}" ] && rm -rf "${Tmp%/*}/_${Tmp##*/_}"
-    trap -  EXIT HUP INT QUIT PIPE ALRM TERM
-    exit $1
-}
-
-debug() (
-    (PS4=':'; set -x; : "${@}")
-    "$@"
-)
-
-update_list() {
-    trap 'exit_trap' EXIT HUP INT QUIT PIPE ALRM TERM
-    Tmp=$(mktemp -t "_${0##*/}.$$.XXXXXXXXXXX") || error_exit 1 'Failed to mktemp'
-    cat | sort | uniq > "${Tmp}"
-    mv "${Tmp}" "${LIST_FILE}"
-}
 
 upgrade() {
     if [ ! -f "${LIST_FILE}" ] || [ "$(du -k "${LIST_FILE}" | awk '{print $1}')" -eq 0 ]; then
@@ -52,25 +27,31 @@ upgrade() {
     fi
 }
 
-help() {
-    debug : ${0##*/} help
-    cat <<-USAGE 1>&2
-	usage: ${0##*/} <subcommand>
-	sub commands:
-	  list-installed
-	  pm-list-save
-	  upgrade
-	USAGE
-}
+Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d."; pwd)"
+for file in $(find "${Homedir}/../lib" -not -type d); do
+    . "$file"
+done
 
-Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d.."; pwd)"
-LIST_FILE="${Homedir}/plugins/pmo-git.d/list"
+subcmd="$1" && shift
 
-subcmd="${1}"
+LIST_FILE="${Homedir%/*}/plugins/pmo-git.d/list"
 
-case "${subcmd}" in
-    list-installed) debug cat "${LIST_FILE}" || true ;;
-    pm-list-save)   update_list ;;
-    upgrade)        upgrade "$@" ;;
-    help)           help ;;
+#@ SUBCMD_CASE
+case "$subcmd" in
+    install)        # add targetted repositories
+        {
+            cat "$LIST_FILE"
+            echo
+            while read -r dir; do
+                printf '%s\n' "$dir"
+            done
+        } | sort | uniq > "${LIST_FILE}.new"
+        mv "${LIST_FILE}.new" "$LIST_FILE"
+        ;;
+    list-installed) # list targetted repositories
+        debug cat "$LIST_FILE" || true
+        ;;
+    upgrade)        # `git pull` in all targetted repositories
+        upgrade "$@"
+        ;;
 esac

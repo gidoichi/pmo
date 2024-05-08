@@ -1,35 +1,26 @@
-# -*- mode: shell-script -*-
+#!/bin/sh
 
 set -eu
 
-debug() (
-    (PS4=':'; set -x; : "${@}")
-    "$@"
-)
+Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d."; pwd)"
+for file in $(find "${Homedir}/../lib" -not -type d); do
+    . "$file"
+done
 
-upgrade() {
-    asdf current | cut -d ' ' -f 1 | while read line; do
-        debug asdf install "${line}" latest
-        debug asdf global "${line}" latest
-    done
-}
+subcmd="$1" && shift
 
-help() {
-    debug : ${0##*/} help
-    cat <<-USAGE 1>&2
-	usage: ${0##*/} <subcommand>
-	sub commands:
-	  list-installed
-	  update
-	  upgrade
-	USAGE
-}
-
-subcmd="${1}"
-
-case "${subcmd}" in
-    list-installed) debug asdf list ;;
-    update)         debug asdf plugin update --all ;;
-    upgrade)        upgrade ;;
-    help)           help ;;
+#@ SUBCMD_CASE
+case "$subcmd" in
+    list-installed) # `asdf list`
+        asdf list
+        ;;
+    update)         # `asdf plugin update --all`
+        asdf plugin update --all
+        ;;
+    upgrade)        # install and set the latest version of all plugins
+        asdf current 2>/dev/null | cut -d ' ' -f 1 | while read line; do
+            debug asdf install "$line" latest
+            debug asdf global "$line" latest
+        done
+        ;;
 esac

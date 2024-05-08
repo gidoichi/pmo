@@ -1,40 +1,25 @@
-# -*- mode: shell-script -*-
+#!/bin/sh
 
 set -eu
 
-debug() (
-    (PS4=':'; set -x; : "${@}")
-    "$@"
-)
+Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d."; pwd)"
+for file in $(find "${Homedir}/../lib" -not -type d); do
+    . "$file"
+done
 
-upgrade() {
-    if [ $# -eq 0 ]; then
-        pmo --manager=go list |
-            xargs go version -m |
-            awk '$1=="path"{print $2 "@latest"}' |
-            while read -r pkg; do
-                debug go install "$pkg"
-            done
-    else
-        debug go install "$@"
-    fi
-}
+subcmd="$1" && shift
 
-help() {
-    debug : ${0##*/} help
-    cat <<-USAGE 1>&2
-	usage: ${0##*/} <subcommand>
-	sub commands:
-	  list
-	  upgrade
-	USAGE
-}
-
-subcmd="${1}"
-
-shift
-case "${subcmd}" in
-    list-installed) find "$GOPATH/bin" -type f ;;
-    upgrade)        upgrade "$@";;
-    help)           help ;;
+#@ SUBCMD_CASE
+case "$subcmd" in
+    list-installed) # list installed packages in $GOPATH/bin
+        debug : "${0##*/} $subcmd $*"
+        find "$GOPATH/bin" -type f | while read -r pkg; do
+            go version -m "$pkg" | awk '$1=="path"{path=$2} $1=="mod"{ver=$3} END{print path "@" ver}'
+        done
+        ;;
+    upgrade)        # upgrade all installed packages
+        "$0" list-installed 2>/dev/null | cut -d '@' -f 1 | sed 's/$/@latest/' | while read -r pkg; do
+            debug go install "$pkg"
+        done
+        ;;
 esac
