@@ -27,14 +27,14 @@ upgrade() {
     fi
 }
 
-Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d."; pwd)"
-for file in $(find "${Homedir}/../lib" -not -type d); do
+Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d.."; pwd)"
+for file in $(find "${Homedir}/lib/utils" -not -type d); do
     . "$file"
 done
 
 subcmd="$1" && shift
 
-LIST_FILE="${Homedir%/*}/plugins/pmo-git.d/list"
+LIST_FILE="${Homedir}/config/git/installed-list"
 
 #@ SUBCMD_CASE
 case "$subcmd" in

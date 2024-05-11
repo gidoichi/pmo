@@ -35,7 +35,7 @@ error_exit() {
 }
 
 # === Detect home directory of this app ==============================
-Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d."; pwd)"
+Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d.."; pwd)"
 
 
 ######################################################################
@@ -76,6 +76,7 @@ subcmd="${1:-}" && shift
 ######################################################################
 # Main Routine
 ######################################################################
+
 if [ "$(printf '%s\n' "$subcmd" | tr ',' '\n' | wc -l)" -ge 2 ]; then
     printf '%s\n' "$subcmd" | tr ',' '\n' | while read -r cmd; do
         "$0" "$cmd" "$@"
@@ -85,12 +86,12 @@ fi
 
 if [ "$subcmd" = help ]; then
     if [ -n "${pm:-}" ]; then
-        ls "${Homedir}/pmo-${pm}" >/dev/null
+        ls "${Homedir}/plugins/pmo-${pm}" >/dev/null
         printf '%s\n' "usage: pmo --manager=${pm} <subcommand> [args...]"
         printf '%s\n' 'subcommand:'
-        cat "${Homedir}/pmo-${pm}" | sed -n '/^#@ SUBCMD_CASE$/,/^esac$/p' | grep ')' >&2
+        cat "${Homedir}/plugins/pmo-${pm}" | sed -n '/^#@ SUBCMD_CASE$/,/^esac$/p' | grep ')' >&2
     else
-        find "$Homedir" -not -type d -not -path '*/.*' -name 'pmo-*' |
+        find "${Homedir}/plugins" -not -type d -not -path '*/.*' -name 'pmo-*' |
             while IFS= read -r pm; do
                 "$0" --manager="${pm##*/pmo-}" help || true
                 echo
@@ -100,11 +101,11 @@ if [ "$subcmd" = help ]; then
 fi
 
 if [ "$subcmd" = install ] || [ -n "${pm:-}" ]; then
-    "${Homedir}/pmo-${pm}" "$subcmd" "$@"
+    "${Homedir}/plugins/pmo-${pm}" "$subcmd" "$@"
     exit
 fi
 
-find "$Homedir" -not -type d -not -path '*/.*' -name 'pmo-*' |
+find "${Homedir}/plugins" -not -type d -not -path '*/.*' -name 'pmo-*' |
     while IFS= read -r pm; do
         if ! "$pm" "$subcmd" "$@" </dev/tty; then
             exit 1

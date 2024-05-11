@@ -2,8 +2,8 @@
 
 set -eu
 
-Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d."; pwd)"
-for file in $(find "${Homedir}/../lib" -not -type d); do
+Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d.."; pwd)"
+for file in $(find "${Homedir}/lib/utils" -not -type d); do
     . "$file"
 done
 
