@@ -12,13 +12,13 @@ case "${subcmd}" in
 esac
 
 targets=$(
-    find "${PARENT}/${src_dir}" -maxdepth 1 -type f -name 'pmo-*' |
+    find "${PARENT}/${src_dir}" -maxdepth 1 -type f |
         sed 's#^.*/##' |
         if   [ "${subcmd}" = 'all' ]; then
             cat
         elif [ "${subcmd}" = 'auto-install' ]; then
             while IFS= read -r file; do
-                if type "${file#pmo-}" >/dev/null; then
+                if type "$file" >/dev/null; then
                     printf '%s\n' "${file}"
                 fi
             done
