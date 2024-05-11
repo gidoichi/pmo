@@ -1,0 +1,95 @@
+#!/bin/sh
+
+set -eu
+
+install() {
+    all=false
+    auto=false
+    case "${1:-}" in
+        --all)
+            all=true
+            shift
+            ;;
+        --auto)
+            auto=true
+            shift
+            ;;
+    esac
+
+    targets=$(
+        if   [ "$all" = 'true' ]; then
+            "$0" list 2>/dev/null
+        elif [ "$auto" = 'true' ]; then
+            "$0" list 2>/dev/null | while IFS= read -r file; do
+                if type "$file" >/dev/null; then
+                    printf '%s\n' "$file"
+                fi
+            done
+        else
+            : "$1"
+            for file in "$@"; do
+                printf '%s\n' "$file"
+            done
+        fi | tr '\n' ':' | sed 's/:$//')
+
+    printf '%s\n' "$targets" | tr ':' '\n' |
+        while IFS= read -r file; do
+            if [ -e "./plugins/${file}" ]; then
+                continue
+            fi
+            ls "./lib/managers/${file}" >/dev/null
+            if ! debug ln -s "../lib/managers/${file}" ./plugins/; then
+                exit 1
+            fi
+        done
+}
+
+remove() {
+    all=false
+    case "${1:-}" in
+        --all)
+            all=true
+            shift
+            ;;
+    esac
+
+    targets=$(
+        if   [ "$all" = 'true' ]; then
+            "$0" list-installed 2>/dev/null
+        else
+            : "$1"
+            for file in "$@"; do
+                printf '%s\n' "$file"
+            done
+        fi | tr '\n' ':' | sed 's/:$//')
+
+    printf '%s\n' "$targets" | tr ':' '\n' | while IFS= read -r manager; do
+        printf '%s' "$manager" | grep '/' >/dev/null && exit 1
+        [ -L "./plugins/${manager}" ] || exit 1
+        debug rm "./plugins/${manager}"
+    done
+}
+
+Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d.."; pwd)"
+cd "$Homedir"
+for file in $(find './lib/utils' -not -type d); do
+    . "$file"
+done
+
+subcmd="$1" && shift
+
+#@ SUBCMD_CASE
+case "$subcmd" in
+    install)        # install managers. usage: `pmo --manager=pmo install <--all|--auto|<manager...>>`
+        install "$@"
+        ;;
+    remove)         # remove managers. usage: `pmo --manager=pmo remove <--all|<manager...>>`
+        remove "$@"
+        ;;
+    list)           # list all installable managers
+        debug ls ./lib/managers
+        ;;
+    list-installed) # list installed managers
+        ls ./plugins | grep -v '^pmo$'
+        ;;
+esac

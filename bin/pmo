@@ -19,6 +19,7 @@ print_usage_and_exit() {
 
 	Subcommands:
 	  install <package> ... install package. This subcommand needs to --manager option.
+	  remove .............. remove installed package. This subcommand needs to --manager option.
 	  list ................ list installable packages.
 	  list-installed ...... list installed packages.
 	  list-upgradable ..... list upgradable packages.
@@ -89,18 +90,20 @@ if [ "$subcmd" = help ]; then
         ls "${Homedir}/plugins/${pm}" >/dev/null
         printf '%s\n' "usage: pmo --manager=${pm} <subcommand> [args...]"
         printf '%s\n' 'subcommand:'
-        cat "${Homedir}/plugins/${pm}" | sed -n '/^#@ SUBCMD_CASE$/,/^esac$/p' | grep ')' >&2
+        cat "${Homedir}/plugins/${pm}" | sed -n '/^#@ SUBCMD_CASE$/,/^esac$/p' | grep '^ *[a-zA-Z-]\{1,\})' >&2
     else
-        find "${Homedir}/plugins" -not -type d -not -name '.*' |
+        "$0" --manager=pmo help
+        echo
+        find "${Homedir}/plugins" -not -type d -not -name '.*' | grep -v '/pmo$' |
             while IFS= read -r pm; do
-                "$0" --manager="${pm##*/}" help || true
+                "$0" --manager="${pm##*/}" help
                 echo
             done >&2
     fi
     exit
 fi
 
-if [ "$subcmd" = install ] || [ -n "${pm:-}" ]; then
+if [ "$subcmd" = install ] || [ "$subcmd" = remove ] || [ -n "${pm:-}" ]; then
     "${Homedir}/plugins/${pm}" "$subcmd" "$@"
     exit
 fi

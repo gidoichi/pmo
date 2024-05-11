@@ -28,7 +28,8 @@ upgrade() {
 }
 
 Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d.."; pwd)"
-for file in $(find "${Homedir}/lib/utils" -not -type d); do
+cd "$Homedir"
+for file in $(find './lib/utils' -not -type d); do
     . "$file"
 done
 
