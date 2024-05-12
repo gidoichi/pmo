@@ -1,0 +1,58 @@
+#!/bin/sh
+
+set -eu
+
+upgrade() {
+    if [ ! -f "${LIST_FILE}" ] || [ "$(du -k "${LIST_FILE}" | awk '{print $1}')" -eq 0 ]; then
+        return
+    fi
+
+    upagent=0
+    if [ -z ${SSH_AUTH_SOCK+_} ] && [ -z ${SSH_AGENT_PID+_} ]; then
+        upagent=1
+        eval $(debug ssh-agent)
+        debug ssh-add
+    fi
+
+    cat "${LIST_FILE}" |
+        while IFS= read repo; do (
+            cd "${LIST_FILE%/*}"
+            cd "${repo}" || exit 1
+            debug git pull "$(git remote get-url origin)" "$(git rev-parse --abbrev-ref HEAD)"
+        ); done
+
+    if [ "${upagent}" -ne 0 ]; then
+        upagent=0
+        debug ssh-agent -k
+    fi
+}
+
+Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d.."; pwd)"
+cd "$Homedir"
+for file in $(find './lib/utils' -not -type d); do
+    . "$file"
+done
+
+subcmd="$1" && shift
+
+LIST_FILE="${Homedir}/config/git/installed-list"
+
+#@ SUBCMD_CASE
+case "$subcmd" in
+    install)        # add targetted repositories
+        {
+            cat "$LIST_FILE"
+            echo
+            while read -r dir; do
+                printf '%s\n' "$dir"
+            done
+        } | sort | uniq > "${LIST_FILE}.new"
+        mv "${LIST_FILE}.new" "$LIST_FILE"
+        ;;
+    list-installed) # list targetted repositories
+        debug cat "$LIST_FILE" || true
+        ;;
+    upgrade)        # `git pull` in all targetted repositories
+        upgrade "$@"
+        ;;
+esac

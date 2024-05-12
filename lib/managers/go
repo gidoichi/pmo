@@ -1,0 +1,26 @@
+#!/bin/sh
+
+set -eu
+
+Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d.."; pwd)"
+cd "$Homedir"
+for file in $(find './lib/utils' -not -type d); do
+    . "$file"
+done
+
+subcmd="$1" && shift
+
+#@ SUBCMD_CASE
+case "$subcmd" in
+    list-installed) # list installed packages in $GOPATH/bin
+        debug : "${0##*/} $subcmd $*"
+        find "$GOPATH/bin" -type f | while read -r pkg; do
+            go version -m "$pkg" | awk '$1=="path"{path=$2} $1=="mod"{ver=$3} END{print path "@" ver}'
+        done
+        ;;
+    upgrade)        # upgrade all installed packages
+        "$0" list-installed 2>/dev/null | cut -d '@' -f 1 | sed 's/$/@latest/' | while read -r pkg; do
+            debug go install "$pkg"
+        done
+        ;;
+esac

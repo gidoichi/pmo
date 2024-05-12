@@ -1,0 +1,27 @@
+#!/bin/sh
+
+set -eu
+
+Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d.."; pwd)"
+cd "$Homedir"
+for file in $(find './lib/utils' -not -type d); do
+    . "$file"
+done
+
+subcmd="$1" && shift
+
+#@ SUBCMD_CASE
+case "$subcmd" in
+    list-installed) # `brew list`
+        debug brew list
+        ;;
+    search)         # `brew search [args...]`
+        debug brew search "$@"
+        ;;
+    update)         # `brew update`
+        debug brew update
+        ;;
+    upgrade)        # `brew upgrade [args...]`
+        debug brew upgrade "$@"
+        ;;
+esac

@@ -1,0 +1,39 @@
+#!/bin/sh
+
+set -eu
+
+Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d.."; pwd)"
+cd "$Homedir"
+for file in $(find './lib/utils' -not -type d); do
+    . "$file"
+done
+
+subcmd="$1" && shift
+
+#@ SUBCMD_CASE
+case "$subcmd" in
+    install)         # `sudo apt install [args...]`
+        sudo apt install "$@"
+        ;;
+    list)            # `apt list`
+        debug apt list
+        ;;
+    list-installed)  # `apt list --installed`
+        debug apt list --installed
+        ;;
+    list-upgradable) # `apt list --upgradable`
+        debug apt list --upgradable
+        ;;
+    search)          # `apt search [args...]`
+        debug apt search "$@"
+        ;;
+    update)          # `sudo apt update`
+        debug sudo apt update
+        ;;
+    upgrade)         # `sudo apt upgrade -y [args...]`
+        debug sudo apt upgrade -y "$@"
+        ;;
+    autoremove)      # `sudo apt autoremove`
+        debug sudo apt autoremove
+        ;;
+esac
