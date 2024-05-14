@@ -108,7 +108,7 @@ if [ "$subcmd" = install ] || [ "$subcmd" = remove ] || [ -n "${pm:-}" ]; then
     exit
 fi
 
-find "${Homedir}/plugins" -not -type d |
+find "${Homedir}/plugins" -not -type d -not -name '.*' |
     while IFS= read -r pm; do
         if ! "$pm" "$subcmd" "$@" </dev/tty; then
             exit 1
