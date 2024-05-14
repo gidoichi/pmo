@@ -40,10 +40,13 @@ LIST_FILE="${Homedir}/config/git/installed-list"
 #@ SUBCMD_CASE
 case "$subcmd" in
     install)        # add targetted repositories
+        mkdir -p "${LIST_FILE%/*}"
         {
-            cat "$LIST_FILE"
+            if [ -e "$LIST_FILE" ]; then
+                cat "$LIST_FILE"
+            fi
             echo
-            while read -r dir; do
+            for dir in "$@"; do
                 printf '%s\n' "$dir"
             done
         } | sort | uniq > "${LIST_FILE}.new"
