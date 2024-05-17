@@ -39,17 +39,40 @@ LIST_FILE="${Homedir}/config/git/installed-list"
 
 #@ SUBCMD_CASE
 case "$subcmd" in
-    install)        # add targetted repositories
+    install)        # add target repositories
+        if [ $# -ge 2 ]; then
+            "$0" remove "$1" || exit 1
+            shift
+            "$0" remove "$@"
+            return
+        fi
+
+        target="$1"
         mkdir -p "${LIST_FILE%/*}"
         {
             if [ -e "$LIST_FILE" ]; then
                 cat "$LIST_FILE"
             fi
-            echo
-            for dir in "$@"; do
-                printf '%s\n' "$dir"
-            done
+            debug printf '\n%s\n' "$target"
         } | sort | uniq > "${LIST_FILE}.new"
+        mv "${LIST_FILE}.new" "$LIST_FILE"
+        ;;
+    remove)         # remove targetted repositories
+        if [ $# -ge 2 ]; then
+            "$0" remove "$1" || exit 1
+            shift
+            "$0" remove "$@"
+            return
+        fi
+
+        target="$1"
+        cat "$LIST_FILE" | while IFS= read -r repo; do
+            if [ "$repo" = "$target" ]; then
+                continue
+            fi
+            printf '%s\n' "$repo"
+        done | sort | uniq > "${LIST_FILE}.new"
+        diff "${LIST_FILE}.new" "$LIST_FILE" >/dev/null && exit 1
         mv "${LIST_FILE}.new" "$LIST_FILE"
         ;;
     list-installed) # list targetted repositories
