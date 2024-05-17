@@ -2,6 +2,44 @@
 
 set -eu
 
+install() {
+    if [ $# -ge 2 ]; then
+        "$0" remove "$1" || exit 1
+        shift
+        "$0" remove "$@"
+        return
+    fi
+
+    target="$1"
+    mkdir -p "${LIST_FILE%/*}"
+    {
+        if [ -e "$LIST_FILE" ]; then
+            cat "$LIST_FILE"
+        fi
+        debug printf '\n%s\n' "$target"
+    } | sort | uniq > "${LIST_FILE}.new"
+    mv "${LIST_FILE}.new" "$LIST_FILE"
+}
+
+remove() {
+    if [ $# -ge 2 ]; then
+        "$0" remove "$1" || exit 1
+        shift
+        "$0" remove "$@"
+        return
+    fi
+
+    target="$1"
+    cat "$LIST_FILE" | while IFS= read -r repo; do
+        if [ "$repo" = "$target" ]; then
+            continue
+        fi
+        printf '%s\n' "$repo"
+    done | sort | uniq > "${LIST_FILE}.new"
+    diff "${LIST_FILE}.new" "$LIST_FILE" >/dev/null && exit 1
+    mv "${LIST_FILE}.new" "$LIST_FILE"
+}
+
 upgrade() {
     if [ ! -f "${LIST_FILE}" ] || [ "$(du -k "${LIST_FILE}" | awk '{print $1}')" -eq 0 ]; then
         return
@@ -15,13 +53,16 @@ upgrade() {
     fi
 
     cat "${LIST_FILE}" |
-        while IFS= read repo; do (
+        while IFS= read -r repo; do
+            if [ -z "$repo" ]; then
+                continue
+            fi
             cd "${LIST_FILE%/*}"
-            cd "${repo}" || exit 1
+            cd "$repo" || exit 1
             debug git pull "$(git remote get-url origin)" "$(git rev-parse --abbrev-ref HEAD)"
-        ); done
+        done
 
-    if [ "${upagent}" -ne 0 ]; then
+    if [ "$upagent" -ne 0 ]; then
         upagent=0
         debug ssh-agent -k
     fi
@@ -40,44 +81,17 @@ LIST_FILE="${Homedir}/config/git/installed-list"
 #@ SUBCMD_CASE
 case "$subcmd" in
     install)        # add target repositories
-        if [ $# -ge 2 ]; then
-            "$0" remove "$1" || exit 1
-            shift
-            "$0" remove "$@"
-            return
-        fi
-
-        target="$1"
-        mkdir -p "${LIST_FILE%/*}"
-        {
-            if [ -e "$LIST_FILE" ]; then
-                cat "$LIST_FILE"
-            fi
-            debug printf '\n%s\n' "$target"
-        } | sort | uniq > "${LIST_FILE}.new"
-        mv "${LIST_FILE}.new" "$LIST_FILE"
+        install "$@"
         ;;
+
     remove)         # remove targetted repositories
-        if [ $# -ge 2 ]; then
-            "$0" remove "$1" || exit 1
-            shift
-            "$0" remove "$@"
-            return
-        fi
-
-        target="$1"
-        cat "$LIST_FILE" | while IFS= read -r repo; do
-            if [ "$repo" = "$target" ]; then
-                continue
-            fi
-            printf '%s\n' "$repo"
-        done | sort | uniq > "${LIST_FILE}.new"
-        diff "${LIST_FILE}.new" "$LIST_FILE" >/dev/null && exit 1
-        mv "${LIST_FILE}.new" "$LIST_FILE"
+        remove "$@"
         ;;
+
     list-installed) # list targetted repositories
         debug cat "$LIST_FILE" || true
         ;;
+
     upgrade)        # `git pull` in all targetted repositories
         upgrade "$@"
         ;;
