@@ -4,9 +4,9 @@ set -eu
 
 install() {
     if [ $# -ge 2 ]; then
-        "$0" remove "$1" || exit 1
+        "$0" install "$1" || exit 1
         shift
-        "$0" remove "$@"
+        "$0" install "$@"
         return
     fi
 
