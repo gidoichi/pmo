@@ -19,7 +19,7 @@ print_usage_and_exit() {
 
 	Subcommands:
 	  install <package> ... install package. This subcommand needs to --manager option.
-	  remove .............. remove installed package. This subcommand needs to --manager option.
+	  remove <package> .... remove installed package. This subcommand needs to --manager option.
 	  list ................ list installable packages.
 	  list-installed ...... list installed packages.
 	  list-upgradable ..... list upgradable packages.
