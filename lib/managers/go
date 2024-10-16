@@ -12,6 +12,23 @@ subcmd="$1" && shift
 
 #@ SUBCMD_CASE
 case "$subcmd" in
+    remove)         # remove installed packages in $GOPATH/bin
+        target="$1"
+        file=$(
+            "$0" list-installed 2>/dev/null | while read -r pkg; do
+                if [ "$pkg" = "$target" ]; then
+                    printf '%s\n' "$GOPATH/bin/$(echo "${target%%@*}" | sed 's#.*/##')"
+                    break
+                fi
+            done
+            )
+        if [ -n "$file" ]; then
+            debug rm -f "$file"
+        else
+            echo "package not found: $target" >&2
+            exit 1
+        fi
+        ;;
     list-installed) # list installed packages in $GOPATH/bin
         debug : "${0##*/} $subcmd $*"
         find "$GOPATH/bin" -type f | while read -r pkg; do
