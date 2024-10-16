@@ -18,6 +18,7 @@ print_usage_and_exit() {
 	  -m | --manager=<package-manager> ... specify package manager to execute subcommand.
 
 	Subcommands:
+	  help ................ show detailed usage of subcommand.
 	  install <package> ... install package. This subcommand needs to --manager option.
 	  remove <package> .... remove installed package. This subcommand needs to --manager option.
 	  list ................ list installable packages.
