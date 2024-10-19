@@ -26,19 +26,26 @@ install() {
                 fi
             done
         else
+            # show an error message when no arguments are given
             : "$1"
+
             for file in "$@"; do
                 printf '%s\n' "$file"
             done
         fi | tr '\n' ':' | sed 's/:$//')
 
+    mkdir -p './config/plugins'
+
     printf '%s\n' "$targets" | tr ':' '\n' |
         while IFS= read -r file; do
-            if [ -e "./plugins/${file}" ]; then
+            if [ -e "./config/plugins/${file}" ]; then
                 continue
             fi
-            ls "./lib/managers/${file}" >/dev/null
-            if ! debug ln -s "../lib/managers/${file}" ./plugins/; then
+
+            # show an error message and exit when the managers are not found
+            ls "./managers/plugins/${file}" >/dev/null
+
+            if ! debug ln -s "../../managers/plugins/${file}" './config/plugins/'; then
                 exit 1
             fi
         done
@@ -57,22 +64,24 @@ remove() {
         if   [ "$all" = 'true' ]; then
             "$0" list-installed 2>/dev/null
         else
+            # show an error message when no arguments are given
             : "$1"
+
             for file in "$@"; do
                 printf '%s\n' "$file"
             done
         fi | tr '\n' ':' | sed 's/:$//')
 
-    printf '%s\n' "$targets" | tr ':' '\n' | while IFS= read -r manager; do
-        printf '%s' "$manager" | grep '/' >/dev/null && exit 1
-        [ -L "./plugins/${manager}" ] || exit 1
-        debug rm "./plugins/${manager}"
+    printf '%s\n' "$targets" | tr ':' '\n' | while IFS= read -r file; do
+        [ "$file" = "${file##*/}" ] || exit 1
+        [ -e "./config/plugins/${file}" ] || exit 1
+        debug rm "./config/plugins/${file}"
     done
 }
 
 Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d.."; pwd)"
 cd "$Homedir"
-for file in $(find './lib/utils' -not -type d); do
+for file in $(find './utils' -not -type d); do
     . "$file"
 done
 
@@ -87,9 +96,9 @@ case "$subcmd" in
         remove "$@"
         ;;
     list)           # list all installable managers
-        debug ls ./lib/managers
+        ls './managers/plugins'
         ;;
     list-installed) # list installed managers
-        ls ./plugins | grep -v '^pmo$'
+        ls './config/plugins'
         ;;
 esac

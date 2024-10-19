@@ -13,7 +13,7 @@ export UNIX_STD=2003
 # === Define the functions for printing usage and exiting ============
 print_usage_and_exit() {
     cat <<-USAGE 1>&2
-	Usage: ${0##*/} [<options>] <subcommand> <pm-options>
+	Usage: ${0##*/} [<options>] <subcommand,...> <pm-options>
 	Options:
 	  -m | --manager=<package-manager> ... specify package manager to execute subcommand.
 
@@ -26,7 +26,7 @@ print_usage_and_exit() {
 	  list-upgradable ..... list upgradable packages.
 	  search <package> .... search in installable packages.
 	  update .............. update package list cache.
-	  upgrade ............. upgrade installed package to the latest.
+	  upgrade ............. upgrade installed packages to the latest.
 	USAGE
     exit 1
 }
@@ -38,6 +38,7 @@ error_exit() {
 
 # === Detect home directory of this app ==============================
 Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d.."; pwd)"
+cd "$Homedir"
 
 
 ######################################################################
@@ -50,16 +51,22 @@ while :; do
         -m)
             pm="${2}"
             shift 2
+            if [ "$pm" != "${pm#*/}" ]; then
+                error_exit 1 "Invalid package manager name: $pm"
+            fi
             ;;
         --manager=*)
             pm="${1#--manager=}"
             shift
+            if [ "$pm" != "${pm#*/}" ]; then
+                error_exit 1 "Invalid package manager name: $pm"
+            fi
             ;;
         --)
             shift
             break
             ;;
-        --help|-h|--version)
+        --help|-h)
             print_usage_and_exit
             ;;
         --*|-*)
@@ -79,6 +86,22 @@ subcmd="${1:-}" && shift
 # Main Routine
 ######################################################################
 
+pmexec() {
+    pm="$1"
+    shift
+
+    if [ "$pm" != "${pm##*/}" ]; then
+        "$pm" "$@"
+        return
+    fi
+
+    if [ -e "./managers/${pm}" ]; then
+        "./managers/${pm}" "$@"
+    else
+        "./config/plugins/${pm}" "$@"
+    fi
+}
+
 if [ "$(printf '%s\n' "$subcmd" | tr ',' '\n' | wc -l)" -ge 2 ]; then
     printf '%s\n' "$subcmd" | tr ',' '\n' | while read -r cmd; do
         "$0" "$cmd" "$@"
@@ -87,15 +110,19 @@ if [ "$(printf '%s\n' "$subcmd" | tr ',' '\n' | wc -l)" -ge 2 ]; then
 fi
 
 if [ "$subcmd" = help ]; then
-    if [ -n "${pm:-}" ]; then
-        ls "${Homedir}/plugins/${pm}" >/dev/null
+    if [ -n "${pm:-}" ] && [ -e "./managers/${pm}" ]; then
         printf '%s\n' "usage: pmo --manager=${pm} <subcommand> [args...]"
         printf '%s\n' 'subcommand:'
-        cat "${Homedir}/plugins/${pm}" | sed -n '/^#@ SUBCMD_CASE$/,/^esac$/p' | grep '^ *[a-zA-Z-]\{1,\})' >&2
+        cat "./managers/${pm}" | sed -n '/^#@ SUBCMD_CASE$/,/^esac$/p' | grep '^ *[a-zA-Z-]\{1,\})' >&2
+    elif [ -n "${pm:-}" ]; then
+        ls "./config/plugins/${pm}" >/dev/null
+        printf '%s\n' "usage: pmo --manager=${pm} <subcommand> [args...]"
+        printf '%s\n' 'subcommand:'
+        cat "./config/plugins/${pm}" | sed -n '/^#@ SUBCMD_CASE$/,/^esac$/p' | grep '^ *[a-zA-Z-]\{1,\})' >&2
     else
         "$0" --manager=pmo help
         echo
-        find "${Homedir}/plugins" -not -type d -not -name '.*' | grep -v '/pmo$' |
+        (find './managers' -maxdepth 1 -not -type d ; "$0" -m pmo list-installed) |
             while IFS= read -r pm; do
                 "$0" --manager="${pm##*/}" help
                 echo
@@ -104,14 +131,14 @@ if [ "$subcmd" = help ]; then
     exit
 fi
 
-if [ "$subcmd" = install ] || [ "$subcmd" = remove ] || [ -n "${pm:-}" ]; then
-    "${Homedir}/plugins/${pm}" "$subcmd" "$@"
+if [ -n "${pm:-}" ] || [ "$subcmd" = install ] || [ "$subcmd" = remove ]; then
+    pmexec "$pm" "$subcmd" "$@"
     exit
 fi
 
-find "${Homedir}/plugins" -not -type d -not -name '.*' |
+(find './managers' -maxdepth 1 -not -type d ; "$0" -m pmo list-installed) |
     while IFS= read -r pm; do
-        if ! "$pm" "$subcmd" "$@" </dev/tty; then
+        if ! pmexec "$pm" "$subcmd" "$@" </dev/tty; then
             exit 1
         fi
     done

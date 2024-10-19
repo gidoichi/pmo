@@ -3,14 +3,9 @@
 set -eu
 
 install() {
-    if [ $# -ge 2 ]; then
-        "$0" install "$1" || exit 1
-        shift
-        "$0" install "$@"
-        return
-    fi
-
     target="$1"
+    ls "$target" >/dev/null
+
     mkdir -p "${LIST_FILE%/*}"
     {
         if [ -e "$LIST_FILE" ]; then
@@ -22,13 +17,6 @@ install() {
 }
 
 remove() {
-    if [ $# -ge 2 ]; then
-        "$0" remove "$1" || exit 1
-        shift
-        "$0" remove "$@"
-        return
-    fi
-
     target="$1"
     cat "$LIST_FILE" | while IFS= read -r repo; do
         if [ "$repo" = "$target" ]; then
@@ -57,7 +45,6 @@ upgrade() {
             if [ -z "$repo" ]; then
                 continue
             fi
-            cd "${LIST_FILE%/*}"
             cd "$repo" || exit 1
             debug git pull "$(git remote get-url origin)" "$(git rev-parse --abbrev-ref HEAD)"
         done
@@ -68,28 +55,41 @@ upgrade() {
     fi
 }
 
-Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d.."; pwd)"
+Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d../.."; pwd)"
 cd "$Homedir"
-for file in $(find './lib/utils' -not -type d); do
+for file in $(find './utils' -not -type d); do
     . "$file"
 done
-
 subcmd="$1" && shift
 
-LIST_FILE="${Homedir}/config/git/installed-list"
+LIST_FILE='./config/git/installed-list'
 
 #@ SUBCMD_CASE
 case "$subcmd" in
     install)        # add target repositories
+        if [ $# -ge 2 ]; then
+            "$0" "$subcmd" "$1"
+            shift
+            "$0" "$subcmd" "$@"
+            return
+        fi
+
         install "$@"
         ;;
 
     remove)         # remove targetted repositories
+        if [ $# -ge 2 ]; then
+            "$0" "$subcmd" "$1"
+            shift
+            "$0" "$subcmd" "$@"
+            return
+        fi
+
         remove "$@"
         ;;
 
     list-installed) # list targetted repositories
-        debug cat "$LIST_FILE" || true
+        cat "$LIST_FILE" || true
         ;;
 
     upgrade)        # `git pull` in all targetted repositories
