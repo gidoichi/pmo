@@ -12,11 +12,19 @@ subcmd="$1" && shift
 
 #@ SUBCMD_CASE
 case "$subcmd" in
+    install)        # `asdf plugin add <plugin>`
+        debug asdf plugin add "$1"
+        debug asdf install "$1" latest
+        debug asdf global "$1" latest
+        ;;
+    remove)         # `asdf plugin remove <plugin>`
+        debug asdf plugin remove "$1"
+        ;;
     list-installed) # `asdf list`
-        asdf list
+        debug asdf list
         ;;
     update)         # `asdf plugin update --all`
-        asdf plugin update --all
+        debug asdf plugin update --all
         ;;
     upgrade)        # install and set the latest version of all plugins
         asdf current 2>/dev/null | cut -d ' ' -f 1 | while read line; do
