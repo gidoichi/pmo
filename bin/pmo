@@ -104,7 +104,11 @@ pmexec() {
 
 if [ "$(printf '%s\n' "$subcmd" | tr ',' '\n' | wc -l)" -ge 2 ]; then
     printf '%s\n' "$subcmd" | tr ',' '\n' | while read -r cmd; do
-        "$0" "$cmd" "$@"
+        if [ -n "${pm:-}" ]; then
+            "$0" "--manager=$pm" "$cmd" "$@"
+        else
+            "$0" "$cmd" "$@"
+        fi
     done
     exit
 fi
@@ -136,7 +140,7 @@ if [ -n "${pm:-}" ] || [ "$subcmd" = install ] || [ "$subcmd" = remove ]; then
     exit
 fi
 
-(find './managers' -maxdepth 1 -not -type d ; "$0" -m pmo list-installed) |
+(find './managers' -maxdepth 1 -not -type d ; "$0" --manager=pmo list-installed) |
     while IFS= read -r pm; do
         if ! pmexec "$pm" "$subcmd" "$@" </dev/tty; then
             exit 1
