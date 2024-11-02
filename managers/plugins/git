@@ -71,7 +71,7 @@ case "$subcmd" in
             "$0" "$subcmd" "$1"
             shift
             "$0" "$subcmd" "$@"
-            return
+            exit
         fi
 
         install "$@"
@@ -82,7 +82,7 @@ case "$subcmd" in
             "$0" "$subcmd" "$1"
             shift
             "$0" "$subcmd" "$@"
-            return
+            exit
         fi
 
         remove "$@"
