@@ -12,8 +12,8 @@ subcmd="$1" && shift
 
 #@ SUBCMD_CASE
 case "$subcmd" in
-    install)        # `asdf plugin add <plugin>`
-        debug asdf plugin add "$1"
+    install)        # `asdf plugin add <plugin> [<git-url>]`
+        debug asdf plugin add "$@"
         debug asdf install "$1" latest
         debug asdf global "$1" latest
         ;;
