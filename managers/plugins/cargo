@@ -1,0 +1,15 @@
+case "$subcmd" in
+    install)
+        debug cargo install "$@"
+        ;;
+    list-installed)
+        debug cargo install --list
+        ;;
+    upgrade)
+        if [ $# -eq 0 ]; then
+            debug cargo install-update --all
+        else
+            debug cargo install-update "$@"
+        fi
+        ;;
+esac
