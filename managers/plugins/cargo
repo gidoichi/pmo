@@ -1,11 +1,27 @@
+#!/bin/sh
+
+set -eu
+
+Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d../.."; pwd)"
+cd "$Homedir"
+for file in $(find './utils' -not -type d); do
+    . "$file"
+done
+
+subcmd="$1" && shift
+
+#@ SUBCMD_CASE
 case "$subcmd" in
-    install)
+    install)        # `cargo instal [args...]`
         debug cargo install "$@"
         ;;
-    list-installed)
+    remove)         # `cargo uninstall [args...]`
+        debug cargo uninstall "$@"
+        ;;
+    list-installed) # `cargo install --list`
         debug cargo install --list
         ;;
-    upgrade)
+    upgrade)        # upgrade installed packages
         if [ $# -eq 0 ]; then
             debug cargo install-update --all
         else
