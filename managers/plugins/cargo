@@ -21,11 +21,28 @@ case "$subcmd" in
     list-installed) # `cargo install --list`
         debug cargo install --list
         ;;
+    search)         # `cargo search [args...]`
+        debug cargo search "$@"
+        ;;
     upgrade)        # upgrade installed packages
+        if cargo install-update --version >/dev/null 2>&1; then
+            if [ $# -eq 0 ]; then
+                debug cargo install-update --all
+            else
+                debug cargo install-update "$@"
+            fi
+            return
+        fi
+
         if [ $# -eq 0 ]; then
-            debug cargo install-update --all
-        else
-            debug cargo install-update "$@"
+            cargo install --list | grep '^[^ ]' | sed 's/:$//' | while read -r line; do
+                installed=${line##* v}
+                latest=$(cargo info "${line%% *}" 2>/dev/null | sed -n 's/^version: //p')
+                if ! [ "$installed" = "$latest" ]; then
+                    debug cargo install "${line%% *}" --force
+                fi
+            done
+            return
         fi
         ;;
 esac
