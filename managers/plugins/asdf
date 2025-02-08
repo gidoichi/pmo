@@ -27,9 +27,9 @@ case "$subcmd" in
         debug asdf plugin update --all
         ;;
     upgrade)        # install and set the latest version of all plugins
-        asdf current 2>/dev/null | cut -d ' ' -f 1 | while read line; do
-            debug asdf install "$line" latest
-            debug asdf global "$line" latest
+        asdf current --no-header 2>/dev/null | cut -d ' ' -f 1 | while read line; do
+            debug asdf install "$line" latest || true
+            debug asdf set --home "$line" latest
         done
         ;;
 esac
