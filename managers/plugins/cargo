@@ -31,18 +31,15 @@ case "$subcmd" in
             else
                 debug cargo install-update "$@"
             fi
-            return
+            exit
         fi
 
-        if [ $# -eq 0 ]; then
-            cargo install --list | grep '^[^ ]' | sed 's/:$//' | while read -r line; do
-                installed=${line##* v}
-                latest=$(cargo info "${line%% *}" 2>/dev/null | sed -n 's/^version: //p')
-                if ! [ "$installed" = "$latest" ]; then
-                    debug cargo install "${line%% *}" --force
-                fi
-            done
-            return
-        fi
+        cargo install --list | grep '^[^ ]' | sed 's/:$//' | while read -r line; do
+            installed=${line##* v}
+            latest=$(cargo info "${line%% *}" 2>/dev/null | sed -n 's/^version: //p')
+            if ! [ "$installed" = "$latest" ]; then
+                debug cargo install "${line%% *}" --force
+            fi
+        done
         ;;
 esac
