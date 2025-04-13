@@ -12,6 +12,9 @@ subcmd="$1" && shift
 
 #@ SUBCMD_CASE
 case "$subcmd" in
+    install)        # `brew install [args...]`
+        debug brew install "$@"
+        ;;
     list-installed) # `brew list`
         debug brew list
         ;;
