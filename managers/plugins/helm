@@ -1,0 +1,29 @@
+#!/bin/sh
+
+set -eu
+
+Homedir="$(d=${0%/*}/; [ "_$d" = "_$0/" ] && d='./'; cd "$d../.."; pwd)"
+cd "$Homedir"
+for file in $(find './utils' -not -type d); do
+    . "$file"
+done
+
+subcmd="$1" && shift
+
+#@ SUBCMD_CASE
+case "$subcmd" in
+    install)        # `helm plugin install "$@"`
+        debug helm plugin install "$@"
+        ;;
+    remove)         # `helm plugin uninstall "$@"`
+        debug helm plugin uninstall "$@"
+        ;;
+    list-installed) # `helm plugin list`
+        debug helm plugin list
+        ;;
+    upgrade)        # update all plugins
+        helm plugin list | awk 'NR>1{print $1}' | while read line; do
+            debug helm plugin update "$line"
+        done
+        ;;
+esac
